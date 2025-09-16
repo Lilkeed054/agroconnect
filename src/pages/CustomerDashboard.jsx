@@ -5,15 +5,57 @@ import { FaShoppingBag, FaWallet, FaCalendarAlt, FaSeedling } from 'react-icons/
 
 const CustomerDashboard = () => {
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { user } = useAuth();
 
   useEffect(() => {
-    api.getOrders('customer').then(setOrders);
+    loadOrders();
   }, []);
+
+  const loadOrders = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.getOrders('customer');
+      // Ensure we always have an array
+      const ordersData = Array.isArray(response) ? response : response?.data || [];
+      setOrders(ordersData);
+    } catch (err) {
+      console.error('Failed to load orders:', err);
+      setError('Failed to load orders. Please try again.');
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Calculate stats
   const totalSpent = orders.reduce((sum, order) => sum + parseFloat(order.total || 0), 0);
   const totalOrders = orders.length;
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
+        <div className="spinner-border" style={{ color: '#D4A837' }} role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="container py-5 text-center" style={{ color: '#B0C0A8' }}>
+        <p>{error}</p>
+        <button className="btn btn-gold-dash" onClick={loadOrders}>
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -123,7 +165,7 @@ const CustomerDashboard = () => {
           </div>
         ) : (
           <div className="row g-4">
-            {orders.map(order => (
+            {orders.map((order) => (
               <div className="col-12" key={order.id}>
                 <div className="card border-0 shadow-lg rounded-4 overflow-hidden card-hover-dash" style={{ background: '#162016', border: '1px solid rgba(212,168,55,0.08)' }}>
                   <div className="card-body p-4">
@@ -131,14 +173,14 @@ const CustomerDashboard = () => {
                       <div>
                         <h5 className="fw-bold mb-1" style={{ color: '#D4A837' }}>Order #{order.id}</h5>
                         <p className="small mb-2" style={{ color: '#B0C0A8' }}>
-                          <FaCalendarAlt className="me-1" /> {new Date(order.created_at).toLocaleDateString('en-US', { 
-                            year: 'numeric', month: 'long', day: 'numeric' 
+                          <FaCalendarAlt className="me-1" /> {new Date(order.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric', month: 'long', day: 'numeric'
                           })}
                         </p>
                       </div>
-                      <span 
+                      <span
                         className="badge rounded-pill px-3 py-2"
-                        style={order.status === 'delivered' 
+                        style={order.status === 'delivered'
                           ? { backgroundColor: '#1A2A1A', color: '#7C9A5E', border: '1px solid rgba(124,154,94,0.3)' }
                           : { backgroundColor: '#1A2A1A', color: '#D4A837', border: '1px solid rgba(212,168,55,0.2)' }
                         }
@@ -152,7 +194,7 @@ const CustomerDashboard = () => {
                         <span style={{ color: '#B0C0A8' }}>Total amount: </span>
                         <span className="fw-bold fs-5" style={{ color: '#D4A837' }}>${parseFloat(order.total).toFixed(2)}</span>
                       </div>
-                      <button 
+                      <button
                         className="btn btn-sm rounded-pill mt-2 mt-sm-0 btn-outline-gold-dash"
                         onClick={() => window.location.href = `/orders/${order.id}`}
                       >

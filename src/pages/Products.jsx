@@ -3,7 +3,7 @@ import { useLocation } from '../contexts/LocationContext';
 import ProductCard from '../components/ProductCard';
 import MapView from '../components/MapView';
 import { FaFilter, FaMap, FaList, FaSeedling } from 'react-icons/fa';
-import { mockProducts } from '../utils/mockData';
+import { api } from '../services/api';
 
 const Products = () => {
   const { coordinates, city } = useLocation();
@@ -12,40 +12,74 @@ const Products = () => {
   const [filtered, setFiltered] = useState([]);
   const [category, setCategory] = useState('all');
   const [priceRange, setPriceRange] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Fetch real products from API
   useEffect(() => {
-    setProducts(mockProducts);
-    setFiltered(mockProducts);
-  }, [coordinates]);
+    loadProducts();
+  }, []);
 
+  const loadProducts = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.getProducts();
+      // Handle paginated response (response.data) or plain array
+      const productList = response?.data ?? response;
+      setProducts(Array.isArray(productList) ? productList : []);
+      setFiltered(Array.isArray(productList) ? productList : []);
+    } catch (err) {
+      console.error('Failed to load products:', err);
+      setError('Failed to load products. Please try again.');
+      setProducts([]);
+      setFiltered([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Apply filters whenever products, category, or priceRange change
   useEffect(() => {
     let result = products;
-    if (category !== 'all') result = result.filter(p => p.category === category);
-    if (priceRange === 'low') result = result.filter(p => p.price < 10);
-    else if (priceRange === 'mid') result = result.filter(p => p.price >= 10 && p.price <= 30);
-    else if (priceRange === 'high') result = result.filter(p => p.price > 30);
+    if (category !== 'all') {
+      result = result.filter(p => p.category === category);
+    }
+    if (priceRange === 'low') {
+      result = result.filter(p => p.price < 10);
+    } else if (priceRange === 'mid') {
+      result = result.filter(p => p.price >= 10 && p.price <= 30);
+    } else if (priceRange === 'high') {
+      result = result.filter(p => p.price > 30);
+    }
     setFiltered(result);
   }, [category, priceRange, products]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
+        <div className="spinner-border" style={{ color: '#D4A837' }} role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container py-5 text-center" style={{ color: '#B0C0A8' }}>
+        <p>{error}</p>
+        <button className="btn btn-gold-dash" onClick={loadProducts}>
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <>
       <style>{`
-        @keyframes slideLeft {
-          from { opacity: 0; transform: translateX(-30px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes scaleIn {
-          from { opacity: 0; transform: scale(0.96); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .animate-slide-left { animation: slideLeft 0.5s ease-out forwards; }
-        .animate-fade-up { animation: fadeUp 0.5s ease-out forwards; }
-        .animate-scale-in { animation: scaleIn 0.4s ease-out forwards; }
-        
         .filter-card {
           background: #162016;
           border: 1px solid rgba(212, 168, 55, 0.12);
@@ -90,6 +124,7 @@ const Products = () => {
           background: #162016;
           border: 1px solid rgba(212, 168, 55, 0.08);
           border-radius: 1.5rem;
+          padding: 3rem 1rem;
         }
         .map-container {
           background: #162016;
@@ -97,14 +132,29 @@ const Products = () => {
           border-radius: 1.5rem;
           overflow: hidden;
         }
+        @keyframes slideLeft {
+          from { opacity: 0; transform: translateX(-30px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+          from { opacity: 0; transform: scale(0.96); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .animate-slide-left { animation: slideLeft 0.5s ease-out forwards; }
+        .animate-fade-up { animation: fadeUp 0.5s ease-out forwards; }
+        .animate-scale-in { animation: scaleIn 0.4s ease-out forwards; }
       `}</style>
 
       <div className="container py-4" style={{ color: '#D0D8C8' }}>
         <div className="row g-4">
-          {/* Sidebar Filters – dark themed */}
+          {/* Sidebar Filters */}
           <div className="col-md-3">
-            <div 
-              className="card filter-card shadow-lg rounded-4 p-3 sticky-top animate-slide-left" 
+            <div
+              className="card filter-card shadow-lg rounded-4 p-3 sticky-top animate-slide-left"
               style={{ top: '90px' }}
             >
               <div className="d-flex align-items-center gap-2 mb-3">
@@ -112,11 +162,11 @@ const Products = () => {
                 <h5 className="fw-bold mb-0" style={{ color: '#D4A837' }}>Filters</h5>
               </div>
               <hr className="my-2" style={{ borderColor: 'rgba(212,168,55,0.15)' }} />
-              
+
               <label className="fw-semibold mb-2" style={{ color: '#7C9A5E' }}>Category</label>
-              <select 
-                className="form-select rounded-pill mb-3 input-dark-products" 
-                value={category} 
+              <select
+                className="form-select rounded-pill mb-3 input-dark-products"
+                value={category}
                 onChange={e => setCategory(e.target.value)}
               >
                 <option value="all">All</option>
@@ -125,11 +175,11 @@ const Products = () => {
                 <option value="dairy">Dairy</option>
                 <option value="handmade">Handmade</option>
               </select>
-              
+
               <label className="fw-semibold mb-2" style={{ color: '#7C9A5E' }}>Price Range</label>
-              <select 
-                className="form-select rounded-pill input-dark-products" 
-                value={priceRange} 
+              <select
+                className="form-select rounded-pill input-dark-products"
+                value={priceRange}
                 onChange={e => setPriceRange(e.target.value)}
               >
                 <option value="all">All</option>
@@ -137,28 +187,27 @@ const Products = () => {
                 <option value="mid">$10 – $30</option>
                 <option value="high">Above $30</option>
               </select>
-              
-              {/* Decorative icon */}
+
               <div className="text-center mt-4">
                 <FaSeedling size={28} style={{ color: '#D4A837', opacity: 0.6 }} />
               </div>
             </div>
           </div>
 
-          {/* Main Content Area */}
+          {/* Main Content */}
           <div className="col-md-9">
             <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
               <h3 className="fw-bold" style={{ color: '#D4A837' }}>
                 Fresh products near <span style={{ color: '#7C9A5E' }}>{city}</span>
               </h3>
               <div className="btn-group shadow-sm">
-                <button 
+                <button
                   className={`btn rounded-pill rounded-end-0 btn-toggle ${view === 'grid' ? 'active' : ''}`}
                   onClick={() => setView('grid')}
                 >
                   <FaList className="me-1" /> Grid
                 </button>
-                <button 
+                <button
                   className={`btn rounded-pill rounded-start-0 btn-toggle ${view === 'map' ? 'active' : ''}`}
                   onClick={() => setView('map')}
                 >
@@ -176,7 +225,7 @@ const Products = () => {
                     </div>
                   ))
                 ) : (
-                  <div className="empty-state text-center py-5">
+                  <div className="empty-state text-center">
                     <FaSeedling size={48} className="mb-3" style={{ color: '#D4A837' }} />
                     <h5 style={{ color: '#D0D8C8' }}>No products found</h5>
                     <p style={{ color: '#B0C0A8' }}>Try adjusting your filters</p>

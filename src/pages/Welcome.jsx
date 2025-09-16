@@ -11,7 +11,7 @@ const Welcome = () => {
   const { city } = useLocation();
   const { user } = useAuth();
 
-  // Fast‑loading, CDN‑hosted background images (optimised for web)
+  // Fast‑loading, CDN‑hosted background images
   const backgrounds = [
     'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
     'https://images.pexels.com/photos/2041627/pexels-photo-2041627.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
@@ -20,7 +20,6 @@ const Welcome = () => {
 
   const [currentBg, setCurrentBg] = useState(0);
 
-  // Auto-rotate every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentBg((prev) => (prev + 1) % backgrounds.length);
@@ -32,6 +31,25 @@ const Welcome = () => {
     <>
       {/* Professional animations & dark theme enhancements */}
       <style>{`
+        /* ── Prevent horizontal scrolling ── */
+        html, body {
+          overflow-x: hidden;
+          width: 100%;
+          max-width: 100%;
+        }
+        #root {
+          overflow-x: hidden;
+        }
+        .container, .container-fluid {
+          padding-left: 15px;
+          padding-right: 15px;
+        }
+        img, svg {
+          max-width: 100%;
+          height: auto;
+        }
+
+        /* ── Animations (unchanged) ── */
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(30px); }
           to { opacity: 1; transform: translateY(0); }
@@ -92,6 +110,43 @@ const Welcome = () => {
           -webkit-backdrop-filter: blur(12px);
           border: 1px solid rgba(212, 168, 55, 0.12);
         }
+
+        /* ── Mobile responsiveness ── */
+        @media (max-width: 576px) {
+          .display-1 {
+            font-size: 2.5rem !important;
+          }
+          .lead.fs-2 {
+            font-size: 1.2rem !important;
+          }
+          .fs-5 {
+            font-size: 1rem !important;
+          }
+          .btn-lg {
+            font-size: 0.9rem !important;
+            padding: 0.6rem 1.2rem !important;
+          }
+          .btn-lg.me-3 {
+            margin-right: 0.5rem !important;
+          }
+          .row.g-4 {
+            --bs-gutter-y: 1rem;
+          }
+          .card-hover {
+            transform: none !important;
+          }
+          .card-hover:hover {
+            transform: none !important;
+          }
+        }
+        @media (max-width: 768px) {
+          .display-1 {
+            font-size: 3.5rem !important;
+          }
+          .lead.fs-2 {
+            font-size: 1.5rem !important;
+          }
+        }
       `}</style>
 
       {/* Hero Section */}
@@ -101,14 +156,14 @@ const Welcome = () => {
           className="position-absolute top-0 start-0 w-100 h-100 bg-fade"
           style={{
             backgroundImage: `url(${backgrounds[currentBg]})`,
-            backgroundColor: '#0A120A', // ✅ fallback dark color – no grey flash
+            backgroundColor: '#0A120A',
             backgroundSize: 'cover',
             backgroundPosition: 'center 30%',
             transition: 'opacity 1.2s ease-in-out',
             zIndex: 0
           }}
         />
-        {/* Dark, sophisticated overlay with slight green tint */}
+        {/* Dark overlay */}
         <div 
           className="position-absolute top-0 start-0 w-100 h-100" 
           style={{ 
@@ -130,12 +185,12 @@ const Welcome = () => {
           <p className="mb-4 fs-5 animate-fade-up delay-2" style={{ color: '#B0C0A8' }}>
             Connecting you with farmers and artisans in your neighborhood
           </p>
-          <div className="animate-scale-in delay-3">
+          <div className="animate-scale-in delay-3 d-flex flex-wrap justify-content-center gap-2">
             {!user ? (
               <>
                 <Link 
                   to="/register?role=vendor" 
-                  className="btn btn-lg rounded-pill me-3 btn-hover" 
+                  className="btn btn-lg rounded-pill btn-hover" 
                   style={{ 
                     backgroundColor: '#D4A837', 
                     color: '#0A120A', 
@@ -209,7 +264,7 @@ const Welcome = () => {
             { value: '15+', label: 'Regional Markets', icon: <FaGlobe size={36} />, color: '#D4A837' },
             { value: '98%', label: 'Fresh Delivery Rate', icon: <FaStar size={36} />, color: '#7C9A5E' }
           ].map((stat, idx) => (
-            <div className="col-md-3" key={idx}>
+            <div className="col-6 col-md-3" key={idx}>
               <div className="card border-0 shadow-lg rounded-4 p-3 card-hover h-100" style={{ background: '#162016', border: '1px solid rgba(212,168,55,0.1)' }}>
                 <div className="card-body">
                   <div style={{ color: stat.color }} className="mb-3">{stat.icon}</div>
@@ -240,7 +295,7 @@ const Welcome = () => {
             <p className="lead" style={{ color: '#D0D8C8' }}>
               Traditional supply chains eat up to 70% of a farmer's income. AgroConnect gives them a direct digital storefront.
             </p>
-            <div className="d-flex gap-4 mt-4">
+            <div className="d-flex flex-wrap gap-4 mt-4">
               <div className="text-center p-3 rounded-4 shadow-lg flex-fill card-hover" style={{ background: '#162016', border: '1px solid rgba(124,154,94,0.2)' }}>
                 <FaHandsHelping size={40} color="#D4A837" className="mb-2" />
                 <h5 style={{ color: '#D0D8C8' }}>For Farmers</h5>
@@ -266,7 +321,7 @@ const Welcome = () => {
             { icon: <FaTractor />, title: "Farmer Verification", desc: "Trust badges and quality certifications.", color: "#D4A837" },
             { icon: <FaPaintBrush />, title: "Artisan Collective", desc: "Handmade goods from local creators.", color: "#7C9A5E" }
           ].map((feat, idx) => (
-            <div className="col-md-3" key={idx}>
+            <div className="col-6 col-md-3" key={idx}>
               <div className="card h-100 border-0 shadow-lg text-center p-3 rounded-4 card-hover" style={{ background: '#162016', border: '1px solid rgba(212,168,55,0.08)' }}>
                 <div className="card-body">
                   <div className="display-4 mb-3" style={{ color: feat.color }}>{feat.icon}</div>

@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation } from '../contexts/LocationContext';
-import LocationSector from './LocationSector'; // Assuming this is the updated dark version
+import LocationSector from './LocationSector';
 import { FaShoppingCart, FaUser } from 'react-icons/fa';
 import { useCart } from '../contexts/CartContext';
 
@@ -16,7 +16,6 @@ const Navbar = () => {
     navigate('/');
   };
 
-  // Updated logo – dark theme with gold and moss
   const Logo = () => (
     <div className="d-flex align-items-center gap-2">
       <svg width="36" height="36" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -160,51 +159,47 @@ const Navbar = () => {
           <NavLink className="navbar-brand d-flex align-items-center" to="/" style={{ textDecoration: 'none' }}>
             <Logo />
           </NavLink>
-          
-          <button 
-            className="navbar-toggler" 
-            type="button" 
-            data-bs-toggle="collapse" 
+
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
             data-bs-target="#mainNavbar"
           >
             <span className="navbar-toggler-icon"></span>
           </button>
-          
+
           <div className="collapse navbar-collapse" id="mainNavbar">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               <li className="nav-item">
-                <NavLink 
-                  className="nav-link" 
+                <NavLink
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                   to="/"
-                  activeClassName="active"
                 >
                   Home
                 </NavLink>
               </li>
               <li className="nav-item">
-                <NavLink 
-                  className="nav-link" 
+                <NavLink
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                   to="/products"
-                  activeClassName="active"
                 >
                   Discover
                 </NavLink>
               </li>
               <li className="nav-item">
-                <NavLink 
-                  className="nav-link" 
+                <NavLink
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                   to="/about"
-                  activeClassName="active"
                 >
                   About
                 </NavLink>
               </li>
               {user?.role === 'vendor' && (
                 <li className="nav-item">
-                  <NavLink 
-                    className="nav-link" 
+                  <NavLink
+                    className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                     to="/vendor/dashboard"
-                    activeClassName="active"
                   >
                     Vendor Hub
                   </NavLink>
@@ -212,10 +207,9 @@ const Navbar = () => {
               )}
               {user?.role === 'admin' && (
                 <li className="nav-item">
-                  <NavLink 
-                    className="nav-link" 
+                  <NavLink
+                    className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                     to="/admin/dashboard"
-                    activeClassName="active"
                   >
                     Admin
                   </NavLink>
@@ -225,20 +219,15 @@ const Navbar = () => {
 
             <div className="d-flex align-items-center gap-2">
               <LocationSector />
-              
-              <NavLink 
-                to="/cart" 
-                className="cart-btn"
-              >
+
+              <NavLink to="/cart" className="cart-btn">
                 <FaShoppingCart size={18} />
-                {cartCount > 0 && (
-                  <span className="cart-badge">{cartCount}</span>
-                )}
+                {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
               </NavLink>
 
               {user ? (
                 <div className="dropdown dropdown-dark">
-                  <button 
+                  <button
                     className="btn dropdown-toggle user-btn"
                     data-bs-toggle="dropdown"
                   >
@@ -257,16 +246,10 @@ const Navbar = () => {
                 </div>
               ) : (
                 <div className="d-flex gap-2">
-                  <NavLink 
-                    to="/login" 
-                    className="btn btn-outline-gold-nav"
-                  >
+                  <NavLink to="/login" className="btn btn-outline-gold-nav">
                     Login
                   </NavLink>
-                  <NavLink 
-                    to="/register" 
-                    className="btn btn-gold-nav"
-                  >
+                  <NavLink to="/register" className="btn btn-gold-nav">
                     Sign Up
                   </NavLink>
                 </div>

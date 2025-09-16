@@ -5,7 +5,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { LocationProvider } from './contexts/LocationContext';
 import { CartProvider } from './contexts/CartContext';
 import { SocketProvider } from './contexts/SocketContext';
-import { NotificationProvider } from './contexts/NotificationContext'; // ✅ custom dark toasts
+import { NotificationProvider } from './contexts/NotificationContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LocationSector from './components/LocationSector';
@@ -21,6 +21,7 @@ import CustomerDashboard from './pages/CustomerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Chat from './pages/Chat';
 import About from './pages/About';
+import VendorSettings from './pages/VendorSettings'; // ✅ Added import
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -30,7 +31,6 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* Global animations */}
       <style>{`
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(20px); }
@@ -49,14 +49,12 @@ function App() {
         .animate-fade-in { animation: fadeIn 0.2s ease-out; }
       `}</style>
 
-      {/* ✅ NotificationProvider must be outside AuthProvider so useNotification works inside AuthContext */}
       <NotificationProvider>
         <AuthProvider>
           <LocationProvider>
             <CartProvider>
               <SocketProvider>
                 <div className="d-flex flex-column min-vh-100">
-                  {/* Top bar with location selector */}
                   <div className="bg-light py-1 border-bottom">
                     <div className="container d-flex justify-content-end">
                       <LocationSector />
@@ -72,6 +70,14 @@ function App() {
                       <Route path="/products" element={<Products />} />
                       <Route path="/product/:id" element={<ProductDetail />} />
                       <Route path="/cart" element={<Cart />} />
+                      <Route
+                        path="/vendor/settings"
+                        element={
+                          <ProtectedRoute allowedRoles={['vendor']}>
+                            <VendorSettings />
+                          </ProtectedRoute>
+                        }
+                      />
                       <Route
                         path="/checkout"
                         element={
@@ -115,7 +121,6 @@ function App() {
                     </Routes>
                   </main>
                   <Footer />
-                  {/* ❌ ToastContainer removed – NotificationProvider handles it */}
                 </div>
               </SocketProvider>
             </CartProvider>
