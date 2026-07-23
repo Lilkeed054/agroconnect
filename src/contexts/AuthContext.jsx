@@ -1,12 +1,14 @@
+// src/contexts/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { toast } from 'react-toastify';
+import { useNotification } from './NotificationContext'; // ✅ correct import
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { addNotification } = useNotification(); // ✅ use the hook
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -25,10 +27,10 @@ export const AuthProvider = ({ children }) => {
       const data = await api.login({ email, password });
       localStorage.setItem('token', data.token);
       setUser(data.user);
-      toast.success(`Welcome back, ${data.user.name}!`);
+      addNotification(`Welcome back, ${data.user.name}!`, 'success');
       return data;
     } catch (err) {
-      toast.error(err.message);
+      addNotification(err.message, 'error');
       throw err;
     }
   };
@@ -38,10 +40,10 @@ export const AuthProvider = ({ children }) => {
       const data = await api.register(userData);
       localStorage.setItem('token', data.token);
       setUser(data.user);
-      toast.success('Account created successfully!');
+      addNotification('Account created successfully!', 'success');
       return data;
     } catch (err) {
-      toast.error(err.message);
+      addNotification(err.message, 'error');
       throw err;
     }
   };
@@ -52,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     } catch (e) {}
     localStorage.removeItem('token');
     setUser(null);
-    toast.info('Logged out');
+    addNotification('Logged out', 'info');
   };
 
   return (
